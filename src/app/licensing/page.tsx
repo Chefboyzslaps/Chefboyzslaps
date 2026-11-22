@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, Check } from "lucide-react";
+import { licenseTemplates, formatPrice } from "@/data/store";
+
+export const metadata: Metadata = { title: "Licensing", description: "Understand the placeholder CHEFBOYZ beat license tiers." };
+export default function LicensingPage() { return <div className="page-wrap inner-page"><div className="page-intro"><span className="eyebrow">CLEAR TERMS · ROOM TO CREATE</span><h1>Make it yours.<br /><em>Know the terms.</em></h1><p>Choose a license that fits the record you’re making. The options below are illustrative and will be replaced with CHEFBOYZ’s final terms.</p></div><div className="license-page-grid">{licenseTemplates.map((license, index) => <article className="license-page-card" key={license.id}><span className="eyebrow">0{index + 1} / LICENSE</span><h2>{license.name}</h2><p>{license.summary}</p><strong>{license.price === null ? "Custom" : formatPrice(license.price)}</strong><ul>{license.includes.map((item) => <li key={item}><Check size={14} />{item}</li>)}</ul><Link href="/beats" className="text-link">Browse beats <ArrowRight size={14} /></Link></article>)}</div><div className="notice-box"><b>Important</b><p>These descriptions and prices are placeholders, not legal advice or a binding license. The license shown with a beat at checkout will govern its use. Final terms will be prepared and reviewed by CHEFBOYZ before sales begin.</p></div></div>; }

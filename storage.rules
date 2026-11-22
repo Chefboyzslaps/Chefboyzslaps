@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in ['REPLACE_WITH_ADMIN_UID'];
+    }
+
+    match /songs/{uid}/{fileName} {
+      allow read: if isAdmin() && request.auth.uid == uid;
+      allow create, update: if isAdmin() && request.auth.uid == uid
+        && fileName.size() <= 180
+        && fileName.matches('^[A-Za-z0-9._-]+$')
+        && request.resource.size <= 209715200
+        && request.resource.contentType.matches('audio/.*');
+      allow delete: if isAdmin() && request.auth.uid == uid;
+    }
+  }
+}

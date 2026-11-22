@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Data model: songs/{songId} contains title (1–160 chars), originalName
+    // (1–220 chars), storagePath, size (1–209715200 bytes),
+    // contentType (audio/*), uploadedBy (immutable auth UID), createdAt
+    // (immutable server timestamp), and published (false until a publish flow
+    // is added). No other fields are allowed.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.uid in ['REPLACE_WITH_ADMIN_UID'];
+    }
+
+    function uidUnchanged(data) {
+      return data.uploadedBy == request.auth.uid;
+    }
+
+    function uidNotModified(data) {
+      return data.uploadedBy == resource.data.uploadedBy;
+    }
+
+    function isValidSong(data, uid) {
+      return data.keys().hasAll([
+          'title', 'originalName', 'storagePath', 'size',
+          'contentType', 'uploadedBy', 'createdAt', 'published'
+        ])
+        && data.keys().hasOnly([
+          'title', 'originalName', 'storagePath', 'size',
+          'contentType', 'uploadedBy', 'createdAt', 'published'
+        ])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 160
+        && data.originalName is string && data.originalName.size() > 0 && data.originalName.size() <= 220
+        && data.storagePath is string && data.storagePath.size() <= 300
+        && data.storagePath.matches('^songs/' + uid + '/[A-Za-z0-9._-]{1,220}$')
+        && data.size is int && data.size > 0 && data.size <= 209715200
+        && data.contentType is string && data.contentType.size() <= 100
+        && data.contentType.matches('^audio/.+')
+        && data.uploadedBy == uid
+        && data.createdAt is timestamp && data.createdAt <= request.time
+        && data.published is bool && data.published == false;
+    }
+
+    match /songs/{songId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin()
+        && isOwner(request.auth.uid)
+        && isValidSong(request.resource.data, request.auth.uid)
+        && uidUnchanged(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidSong(request.resource.data, request.auth.uid)
+        && uidNotModified(request.resource.data)
+        && request.resource.data.storagePath == resource.data.storagePath
+        && request.resource.data.originalName == resource.data.originalName
+        && request.resource.data.size == resource.data.size
+        && request.resource.data.contentType == resource.data.contentType
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title']);
+      allow delete: if isAdmin();
+    }
+  }
+}

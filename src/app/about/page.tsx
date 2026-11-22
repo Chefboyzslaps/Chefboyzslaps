@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { BrandArt } from "@/components/brand-art";
+
+export const metadata: Metadata = { title: "About CHEFBOYZ", description: "Meet CHEFBOYZ, the independent production duo behind the records." };
+export default function AboutPage() { return <div className="page-wrap inner-page story-page"><div className="page-intro"><span className="eyebrow">TWO PRODUCERS · ONE KITCHEN</span><h1>We make room<br />for <em>the record.</em></h1><p>CHEFBOYZ is an independent production duo building sounds for artists who have something real to say.</p></div><BrandArt artwork="linear-gradient(125deg,#85735c,#31302b 50%,#171714)" label="CHEFBOYZ studio placeholder artwork" className="story-art" /><div className="story-columns"><span className="eyebrow">OUR APPROACH</span><div><p>We believe a beat should open a door. It can carry a story, change a room, or give an idea the shape it was waiting for.</p><p>CHEFBOYZ is two producers, a shared love of the details, and a kitchen that stays open. This is a place for independent artists to find the sound that feels like theirs.</p><p className="placeholder-note">This is editable placeholder brand copy. Add the duo’s story, credits, and studio details before launch.</p><Link className="text-link" href="/beats">Hear what we make <ArrowUpRight size={15} /></Link></div></div></div>; }
